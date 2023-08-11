@@ -7,13 +7,13 @@ GET http://localhost:3001/info
 GET http://localhost:3001/api/persons/5
 
 ###
-DELETE http://localhost:3001/api/persons
+DELETE http://localhost:3001/api/persons/9
 
 ###
 POST http://localhost:3001/api/persons
 Content-Type: application/json
 
 {
-    "name": "Tomi Salminen",
-    "number": "123456789"
+    "name": "Arto Hellas",
+    "number": "3456"
 }
