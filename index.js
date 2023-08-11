@@ -25,8 +25,18 @@ let phoneContacts = [
 ]
 
 app.get('/info', (req, res) => {
-    // Phonebook has info for [maxID] people
-    // Pyynnön tekemisen päivämäärä ja aika
+    const maxId = phoneContacts.length > 0
+        ? Math.max(...phoneContacts.map(p => p.id))
+        : 0
+
+    const date = new Date();
+    
+    res.send(`
+        <div>
+            <p>Phonebook has info for ${maxId} people </p>
+            <p>${date}</p>
+        </div>
+    `)
 })
 
 app.get('/api/persons', (req, res) => {
