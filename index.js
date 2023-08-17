@@ -1,7 +1,9 @@
 const express = require('express')
 const app = express()
+var morgan = require('morgan')
 
 app.use(express.json())
+app.use(morgan('tiny'))
 
 let persons = [
     {
@@ -76,8 +78,12 @@ app.post('/api/persons', (req, res) => {
         return res.status(400).json({
             error: "Number missing."
         })
-    } else if (persons.map(p => p.name === body.name)) {
-        return res.status(400).json({
+    }
+
+    const duplicate = persons.filter(p => p.name === body.name)
+
+    if (duplicate[0] !== undefined) {
+            return res.status(400).json({
             error: "Name must be unique."
         })
     }
@@ -89,6 +95,8 @@ app.post('/api/persons', (req, res) => {
     }
     
     persons = persons.concat(person)
+
+    morgan.token('type', function (req, res) {return req.headers['content-type']})
 
     res.json(person)
 })
