@@ -2,8 +2,12 @@ const express = require('express')
 const app = express()
 var morgan = require('morgan')
 
+morgan.token('body', function returnBody (req) {
+    return JSON.stringify(req.body) 
+})
+
 app.use(express.json())
-app.use(morgan('tiny'))
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
 let persons = [
     {
@@ -59,7 +63,7 @@ app.get('/api/persons/:id', (req, res) => {
 })
 
 generateId = () => {
-    const id = Math.floor(Math.random() * (10 - 4) + 4)
+    const id = Math.floor(Math.random() * (10 - 4) + 5)
     return id
 }
 
@@ -95,8 +99,6 @@ app.post('/api/persons', (req, res) => {
     }
     
     persons = persons.concat(person)
-
-    morgan.token('type', function (req, res) {return req.headers['content-type']})
 
     res.json(person)
 })
