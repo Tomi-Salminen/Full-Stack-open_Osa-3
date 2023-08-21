@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
 const mongoose = require('mongoose')
@@ -16,14 +17,6 @@ app.use(express.static('build'))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
 mongoose.set('strictQuery', false)
-mongoose.connect(url)
-
-const personSchema = new mongoose.Schema({
-    name: String,
-    number: String
-})
-
-const Person = mongoose.model('Person', personSchema)
 
 let persons = [
     {
@@ -49,8 +42,8 @@ let persons = [
 ]
 
 app.get('/info', (req, res) => {
-    const maxId = persons.length > 0
-        ? Math.max(...persons.map(p => p.id))
+    const maxId = Person.length > 0
+        ? Math.max(...Person.map(p => p.id))
         : 0
 
     const date = new Date();
@@ -68,14 +61,13 @@ app.get('/api/persons', (req, res) => {
 })
 
 app.get('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id)
-    const person = persons.find(p => p.id === id)
+    Person.findById(req.params.id).then(person => res.json(person))
 
-    if (person) {
-        res.json(person)
-    } else {
-        res.status(404).end()
-    }
+    // if (person) {
+    //     res.json(person)
+    // } else {
+    //     res.status(404).end()
+    // }
 })
 
 generateId = () => {
@@ -100,33 +92,36 @@ app.post('/api/persons', (req, res) => {
         })
     }
 
-    const duplicate = persons.filter(p => p.name === body.name)
+    // const duplicate = persons.filter(p => p.name === body.name)
 
-    if (duplicate[0] !== undefined) {
-            return res.status(400).json({
-            error: "Name must be unique."
-        })
-    }
+    // if (duplicate[0] !== undefined) {
+    //         return res.status(400).json({
+    //         error: "Name must be unique."
+    //     })
+    // }
 
-    const person = {
-        id: generateId(),
+    const person = new Person({
+        // id: generateId(),
         name: body.name,
         number: body.number
-    }
+    })
+    console.log(person)
     
-    persons = persons.concat(person)
-
-    res.json(person)
+    person.save().then(savedPerson => {
+        console.log('saven jälkeen')
+        res.json(savedPerson)        
+        console.log('res.jsonin jälkeen')
+    })
 })
 
 app.delete('/api/persons/:id', (req, res) => {
     const id = Number(req.params.id)
-    persons = persons.filter(p => p.id !== id)
+    Person.filter(p => p.id !== id)
 
     res.status(204).end()
 })
 
-const PORT = process.env.PORT || 3001 
+const PORT = process.env.PORT
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
