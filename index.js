@@ -1,16 +1,29 @@
 const express = require('express')
 const cors = require('cors')
-const app = express()
+const mongoose = require('mongoose')
+const Person = require('./models/person')
 var morgan = require('morgan')
+
+const app = express()
 
 morgan.token('body', function returnBody (req) {
     return JSON.stringify(req.body) 
 })
 
-app.use(express.json())
 app.use(cors())
+app.use(express.json())
 app.use(express.static('build'))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
+
+mongoose.set('strictQuery', false)
+mongoose.connect(url)
+
+const personSchema = new mongoose.Schema({
+    name: String,
+    number: String
+})
+
+const Person = mongoose.model('Person', personSchema)
 
 let persons = [
     {
@@ -51,7 +64,7 @@ app.get('/info', (req, res) => {
 })
 
 app.get('/api/persons', (req, res) => {
-    res.json(persons)
+    Person.find({}).then(people => res.json(people))
 })
 
 app.get('/api/persons/:id', (req, res) => {
