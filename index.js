@@ -60,20 +60,17 @@ app.get('/api/persons', (req, res) => {
     Person.find({}).then(people => res.json(people))
 })
 
-app.get('/api/persons/:id', (req, res) => {
-    Person.findById(req.params.id).then(person => res.json(person))
-
-    // if (person) {
-    //     res.json(person)
-    // } else {
-    //     res.status(404).end()
-    // }
+app.get('/api/persons/:id', (req, res, next) => {
+    Person.findById(req.params.id)
+        .then(person => {
+            if (person) {
+                res.json(person)
+            } else {
+                res.status(404).end()
+            }
+        })
+        .catch (error => next(error)) 
 })
-
-generateId = () => {
-    const id = Math.floor(Math.random() * (10 - 4) + 5)
-    return id
-}
 
 app.post('/api/persons', (req, res) => {
     const body = req.body
@@ -92,34 +89,37 @@ app.post('/api/persons', (req, res) => {
         })
     }
 
-    // const duplicate = persons.filter(p => p.name === body.name)
-
-    // if (duplicate[0] !== undefined) {
-    //         return res.status(400).json({
-    //         error: "Name must be unique."
-    //     })
-    // }
-
     const person = new Person({
-        // id: generateId(),
         name: body.name,
         number: body.number
     })
+
     console.log(person)
     
     person.save().then(savedPerson => {
-        console.log('saven jälkeen')
         res.json(savedPerson)        
-        console.log('res.jsonin jälkeen')
     })
 })
 
-app.delete('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id)
-    Person.filter(p => p.id !== id)
-
-    res.status(204).end()
+app.delete('/api/persons/:id', (req, res, next) => {
+    Person.findByIdAndDelete(req.params.id)
+        .then(result => {
+            res.status(204).end()
+        })
+        .catch(error => next(error))
 })
+
+const errorHandler = (error, req, res, next) => {
+    console.error(error.message)
+
+    if (error.name === 'CastError') {
+        return res.status(400).send({ error: 'Malformatted id' })
+    }
+
+    next(error)
+}
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
