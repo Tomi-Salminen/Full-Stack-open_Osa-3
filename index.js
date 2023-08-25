@@ -18,31 +18,22 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :b
 
 mongoose.set('strictQuery', false)
 
-app.get('/info', (req, res) => {
-    const maxId = Person.count()
+app.get('/info', async (req, res) => {
+    try {
+        const maxId = await Person.countDocuments({ })
+        console.log(maxId)
 
-    // console.log('person', Person)
-    // // console.log('person.count', Person.count())
-    // // console.log('person.people.count', Person.people.count())
-    // // console.log('person.test.people.count', Person.test.people.count())
-    // console.log('person.', Person.people.count())
-    // async function run() { 
-    //     try {
-    //         const maxId = await Person.people.count()
-    //     }
-    //     catch(error) {console.log(error)}
-    // }
-
-    // const maxId = Person.people.count()
-
-    const date = new Date();
-    
-    res.send(`
-        <div>
-            <p>Phonebook has info for ${maxId} people</p>
-            <p>${date}</p>
-        </div>
-    `)
+        const date = new Date();
+        
+        res.send(`
+            <div>
+                <p>Phonebook has info for ${maxId} people</p>
+                <p>${date}</p>
+            </div>
+        `)
+    } catch (err) {
+        console.log(err)
+    }
 })
 
 app.get('/api/persons', (req, res) => {
@@ -85,16 +76,11 @@ app.post('/api/persons', (req, res) => {
 
     console.log(person)
     
-    person.save().then(savedPerson => {
-        res.json(savedPerson)        
-    })
+    person.save().then(savedPerson => res.json(savedPerson))
 })
 
 app.put('/api/persons/:id', (req, res, next) => {
-    console.log('put-pyyntö')
-    console.log('req.body', req.body)
     const body = req.body
-    console.log('body', body)
     
     const person = {
         name: body.name,
