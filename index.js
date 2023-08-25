@@ -12,39 +12,28 @@ morgan.token('body', function returnBody (req) {
 })
 
 app.use(cors())
-app.use(express.json())
 app.use(express.static('build'))
+app.use(express.json())
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
 mongoose.set('strictQuery', false)
 
-let persons = [
-    {
-        id: 1,
-        name: "Arto Hellas",
-        number: "040-123456"
-    },
-    {
-        id: 2,
-        name: "Ada Lovelace",
-        number: "39-44-5325323"
-    },
-    {
-        id: 3,
-        name: "Dan Abramov",
-        number: "12-43-234345"
-    },
-    {
-        id: 4,
-        name: "Mary Poppendieck",
-        number: "39-23-6423122"
-    }
-]
-
 app.get('/info', (req, res) => {
-    const maxId = Person.length > 0
-        ? Math.max(...Person.map(p => p.id))
-        : 0
+    const maxId = Person.count()
+
+    // console.log('person', Person)
+    // // console.log('person.count', Person.count())
+    // // console.log('person.people.count', Person.people.count())
+    // // console.log('person.test.people.count', Person.test.people.count())
+    // console.log('person.', Person.people.count())
+    // async function run() { 
+    //     try {
+    //         const maxId = await Person.people.count()
+    //     }
+    //     catch(error) {console.log(error)}
+    // }
+
+    // const maxId = Person.people.count()
 
     const date = new Date();
     
@@ -101,11 +90,25 @@ app.post('/api/persons', (req, res) => {
     })
 })
 
+app.put('/api/persons/:id', (req, res, next) => {
+    console.log('put-pyyntö')
+    console.log('req.body', req.body)
+    const body = req.body
+    console.log('body', body)
+    
+    const person = {
+        name: body.name,
+        number: body.number
+    }
+
+    Person.findByIdAndUpdate(req.params.id, person, { new: true })
+        .then(updatedPerson => res.json(updatedPerson))
+        .catch(error => next(error))
+})
+
 app.delete('/api/persons/:id', (req, res, next) => {
-    Person.findByIdAndDelete(req.params.id)
-        .then(result => {
-            res.status(204).end()
-        })
+    Person.findByIdAndRemove(req.params.id)
+        .then(result => res.status(204).end())
         .catch(error => next(error))
 })
 
