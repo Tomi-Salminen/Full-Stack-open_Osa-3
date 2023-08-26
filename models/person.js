@@ -11,8 +11,22 @@ mongoose.connect(url)
     .catch((error) => console.log('Error connecting to MongoDB:', error.message))
 
 const personSchema = new mongoose.Schema({
-    name: String,
-    number: String
+    name: {
+        type: String,
+        minlength: [3, "Name is too short."],
+        required: [true, "No name added."]
+    },
+    number: {
+        type: String,
+        minlength: [8, 'Phone number is too short.'],
+        required: [true, 'No phone number added.'],
+        validate: {
+            validator: function(v) {
+                return /[0-9]{3}-[0-9]{7}/.test(v) || /[0-9]{2}-[0-9]{7}/.test(v)
+            },
+            message: props => `${props.value} is not a valid format for a phone number.`
+        },
+    }
 })
 
 personSchema.set('toJSON', {
